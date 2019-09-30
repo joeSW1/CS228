@@ -14,9 +14,12 @@ from random import randint
 from pygameWindow_Del03 import PYGAME_WINDOW
 from constants import pygameWindowWidth
 from constants import pygameWindowDepth
-from Deliverable import DELIVERABLE
+from Recorder import DELIVERABLE
 
-gestureData = np.zeros((5,4,6),dtype='f')
+numberOfGestures = 100
+gestureIndex = 0
+
+gestureData = np.zeros((5,4,6,numberOfGestures),dtype='f')
 
 x = (pygameWindowWidth/2)
 y = (pygameWindowDepth/2)
@@ -48,7 +51,7 @@ currentNumberOfHands = 0
 fileNumber = 0
 
 def Handle_Frame(frame):
-    global x, y, xMin, xMax, yMin, yMax, currentNumberOfHands
+    global x, y, xMin, xMax, yMin, yMax, currentNumberOfHands, gestureIndex, numberOfGestures
     ##handlist = frame.hands
     ##numberOfHands = 0
     ## print(str(hand))
@@ -56,9 +59,15 @@ def Handle_Frame(frame):
     hand = frame.hands[0]
         
     fingers = hand.fingers
-    for f in range(0,len(fingers)):
-        
+    for f in range(0,len(fingers)):  
         Handle_Finger(fingers[f], f)
+
+    if (currentNumberOfHands == 2):
+        print('gesture ' + str(gestureIndex) + ' stored.')
+        gestureIndex = gestureIndex + 1
+        if gestureIndex == numberOfGestures:
+            Save_Gesture()
+            exit(0)
 
 def Handle_Finger(finger, f):
     for b in range(0, 4):
@@ -76,17 +85,19 @@ def Handle_Bone(finger, f, b):
         color = (0, 255 , 0)
     if (currentNumberOfHands == 2):
         color = (255, 0, 0)
+        gestureData[f,b,0,gestureIndex] = base[0]
+        gestureData[f,b,1,gestureIndex] = base[1]
+        gestureData[f,b,2,gestureIndex] = base[2]
+        gestureData[f,b,3,gestureIndex] = tip[0]
+        gestureData[f,b,4,gestureIndex] = tip[1]
+        gestureData[f,b,5,gestureIndex] = tip[2]
+        
     pygameWindow.Draw_Line(xBase, yBase, xTip, yTip, b, color)
     ##print(f)
     ##print("Finger #%s" % str(f))
     ##print("Bone #%s" % str(b))
-    
-    gestureData[f,b,0] = base[0]
-    gestureData[f,b,1] = base[1]
-    gestureData[f,b,2] = base[2]
-    gestureData[f,b,3] = tip[0]
-    gestureData[f,b,4] = tip[1]
-    gestureData[f,b,5] = tip[2]
+
+
     
     # print("Base coordinates are %s and %s" % (base[0], base[1]))
     # print("Tip coordinates are %s and %s" % (tip[0], tip[1]))
@@ -100,8 +111,9 @@ def Save_Gesture():
 
 def Recording_Is_Ending():
     if currentNumberOfHands == 1 and previousNumberOfHands == 2:
-        print(gestureData)
-        Save_Gesture()
+       #print(gestureData)
+       # where Save_Gesture() was (13)
+       pass
 
 def Handle_Vector_From_Leap(v):
     global xRawMin, xRawMax, yRawMin, yRawMax, xScaledMin, xScaledMax, yScaledMin, yScaledMax
@@ -169,6 +181,7 @@ while True:
     for hand in handlist:
         if(str(hand) > 0):
             Handle_Frame(frame)
+        
             Recording_Is_Ending()
             previousNumberOfHands = currentNumberOfHands
     
