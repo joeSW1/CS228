@@ -16,7 +16,7 @@ from constants import pygameWindowWidth
 from constants import pygameWindowDepth
 from Recorder import DELIVERABLE
 
-numberOfGestures = 100
+numberOfGestures = 1000
 gestureIndex = 0
 
 gestureData = np.zeros((5,4,6,numberOfGestures),dtype='f')
